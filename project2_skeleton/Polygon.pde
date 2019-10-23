@@ -63,25 +63,25 @@ class Polygon {
          // if there are any intersections get point to evalate edges on right of point
          intersectP = currentEdge.intersectionPoint(infRay);
          
-         // Check if point is on vertex
-         if (p.p.x == currentEdge.p0.p.x && p.p.y == currentEdge.p0.p.y || // on first end
-             p.p.x == currentEdge.p1.p.x && p.p.y == currentEdge.p1.p.y)   // or second end
-         {
-           return true;   
-         }
+         //// Check if point is on vertex
+         //if (p.p.x == currentEdge.p0.p.x && p.p.y == currentEdge.p0.p.y || // on first end
+         //    p.p.x == currentEdge.p1.p.x && p.p.y == currentEdge.p1.p.y)   // or second end
+         //{
+         //  return true;   
+         //}
          
-         // Check if point is on segment
-         // check if collinear
-         if (((p.p.y - currentEdge.p0.p.y)*(currentEdge.p1.p.x - p.p.x) - 
-             (p.p.x - currentEdge.p0.p.x)*(currentEdge.p1.p.y - p.p.y)) == 0) {
-           // check if between p0 and p1
-           if (p.p.x <= max(currentEdge.p0.p.x,currentEdge.p1.p.x) && p.p.x >=min(currentEdge.p0.p.x,currentEdge.p1.p.x) &&
-               p.p.y <= max(currentEdge.p0.p.y,currentEdge.p1.p.y) && p.p.x >=min(currentEdge.p0.p.y,currentEdge.p1.p.y)) {
-             return true;    
-           }          
-         }
+         //// Check if point is on segment
+         //// check if collinear
+         //if (((p.p.y - currentEdge.p0.p.y)*(currentEdge.p1.p.x - p.p.x) - 
+         //    (p.p.x - currentEdge.p0.p.x)*(currentEdge.p1.p.y - p.p.y)) == 0) {
+         //  // check if between p0 and p1
+         //  if (p.p.x <= max(currentEdge.p0.p.x,currentEdge.p1.p.x) && p.p.x >=min(currentEdge.p0.p.x,currentEdge.p1.p.x) &&
+         //      p.p.y <= max(currentEdge.p0.p.y,currentEdge.p1.p.y) && p.p.x >=min(currentEdge.p0.p.y,currentEdge.p1.p.y)) {
+         //    return true;    
+         //  }          
+         //}
          // Make sure imaginary ray does not count vertexes, if vertex found start over
-         if (intersectP.p.y == bdry.get(i).p0.p.y || intersectP.p.y == bdry.get(i).p1.p.y) {
+         if (intersectP != null && (intersectP.p.y == bdry.get(i).p0.p.y || intersectP.p.y == bdry.get(i).p1.p.y)) {
            // increase y endpoint of ray
            infRay.p1.p.y+=50;
            // start over
@@ -93,8 +93,6 @@ class Polygon {
        }
        i++;
      }
-     //// DELETE
-     //println("# of Edge Intersects: ", edgeIntersect);
      // if number of intersections with edges is odd (after all special cases handled), point is in polygon
      if ((edgeIntersect % 2) == 1) {
        return true;
@@ -122,35 +120,29 @@ class Polygon {
        diagC = diag.get(i);
        for (int j = 0; j < bdry.size(); j++) {
          bdryC = bdry.get(j);
+         
+         
+         // Check if boundary is adjacent to diagonal
+         // and excuse intersections with vertices
+         if (diagC.p0.p.x == bdryC.p0.p.x && diagC.p0.p.y == bdryC.p0.p.y ||
+             diagC.p1.p.x == bdryC.p1.p.x && diagC.p1.p.y == bdryC.p1.p.y ||
+             diagC.p0.p.x == bdryC.p1.p.x && diagC.p0.p.y == bdryC.p1.p.y ||
+             diagC.p1.p.x == bdryC.p0.p.x && diagC.p1.p.y == bdryC.p0.p.y) {
+             continue;      
+         }
+         
          if (diagC.intersectionTest(bdryC)) {
            
            intersectP = diagC.intersectionPoint(bdryC);
            
-           // Excuse intersections with vertices
-           if (diagC.p0.p.x == intersectP.p.x && diagC.p0.p.y == intersectP.p.y ||
-               diagC.p1.p.x == intersectP.p.x && diagC.p1.p.y == intersectP.p.y) {
-           } else {
-             // collinear case
-             // Check if point is on segment
-             // check if collinear
-             if (((intersectP.p.y - bdryC.p0.p.y)*(bdryC.p1.p.x - intersectP.p.x) - 
-                 (intersectP.p.x - bdryC.p0.p.x)*(bdryC.p1.p.y - intersectP.p.y)) == 0) {
-               // check if between p0 and p1
-               if (intersectP.p.x <= max(bdryC.p0.p.x,bdryC.p1.p.x) && intersectP.p.x >=min(bdryC.p0.p.x,bdryC.p1.p.x) &&
-                   intersectP.p.y <= max(bdryC.p0.p.y,bdryC.p1.p.y) && intersectP.p.x >=min(bdryC.p0.p.y,bdryC.p1.p.y)) {   
-               }        
-               else {
-                 containsBoundary = true;
-               }
-             }
-             containsBoundary = true;
-             
-           }
-           // if diagonal lies outside with no intersections
-           if (!pointInPolygon(diagC.midpoint())) {
-             containsBoundary = true;
+           if(intersectP != null) {
+             containsBoundary = true; 
            }
          }
+       }
+       // if diagonal lies outside with no intersections
+       if (!pointInPolygon(diagC.midpoint())) {
+         containsBoundary = true;
        }
        if (!containsBoundary) {
          ret.add(diagC);
